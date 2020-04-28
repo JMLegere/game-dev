@@ -34,6 +34,7 @@ public class HeroKnightController : MonoBehaviour, IPlayable
     {
         m_WasGrounded = m_IsGrounded;
         m_IsGrounded = Physics2D.Raycast(transform.position, Vector2.down, m_DistanceToGround + 0.1f);
+        Debug.Log(m_IsGrounded);
     }
 
     private void LateUpdate() 
