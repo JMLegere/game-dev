@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using InControl;
 
 public class InputHandler : MonoBehaviour
 {
@@ -8,8 +9,13 @@ public class InputHandler : MonoBehaviour
     // Member Attributes
     //=============================================================================================
 
+    //Variables
+    public float m_ShortHop_Time;
+    private float m_Player1_JumpTimer;
+
     //Effectors
     public IPlayable m_Player1;
+    InputDevice m_Player1_Device;
 
     // Keybindings
     KeyCode m_Player1_Left_Keyboard     = KeyCode.A;
@@ -188,12 +194,24 @@ public class InputHandler : MonoBehaviour
 
     private void OnPlayer1JumpPressed()
     {
-        m_Player1.Jump(1);
+        if(m_Player1.IsGrounded())
+        {
+            //Reset shorthop timer
+            m_Player1_JumpTimer = m_ShortHop_Time;
+        } else {
+            m_Player1.AirJump();
+        }
     }
     private void OnPlayer1JumpHeld()
     {
+        if (m_Player1_JumpTimer > 0)
+        {
+            m_Player1_JumpTimer = m_Player1_JumpTimer - Time.deltaTime;
+            m_Player1.Jump(m_Player1_JumpTimer * (1 / m_ShortHop_Time));
+        }
     }
     private void OnPlayer1JumpReleased()
     {
+        m_Player1_JumpTimer = 0.0f;
     }
 }

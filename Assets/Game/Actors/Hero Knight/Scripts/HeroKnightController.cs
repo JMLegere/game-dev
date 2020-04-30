@@ -11,11 +11,14 @@ public class HeroKnightController : MonoBehaviour, IPlayable
     Collider2D m_Collider;
 
     public float m_JumpPower;
+    public float m_AirJumpPower;
     public float m_MoveSpeed;
+    public float m_Weight;
 
-    public float m_DistanceToGround;
-    private bool m_WasGrounded = false;
-    private bool m_IsGrounded = false;
+    private float m_DistanceToGround;
+    private bool m_CanAirJump = false;
+    public bool m_WasGrounded = false;
+    public bool m_IsGrounded = false;
 
     // Start is called before the first frame update
     void Start()
@@ -34,7 +37,10 @@ public class HeroKnightController : MonoBehaviour, IPlayable
     {
         m_WasGrounded = m_IsGrounded;
         m_IsGrounded = Physics2D.Raycast(transform.position, Vector2.down, m_DistanceToGround + 0.1f);
-        Debug.Log(m_IsGrounded);
+        if(m_IsGrounded)
+        {
+            m_CanAirJump = false;
+        }
     }
 
     private void LateUpdate() 
@@ -46,6 +52,42 @@ public class HeroKnightController : MonoBehaviour, IPlayable
         {
 
         }
+    }
+
+    private void FixedUpdate() {
+
+        // More gravity if falling down
+        if(m_Rigidbody.velocity.y > 0)
+        {
+            m_Rigidbody.gravityScale = 0.75f * m_Weight;
+        } else {
+            m_Rigidbody.gravityScale = 1.0f * m_Weight;
+        }
+    }
+
+    //=============================================================================================
+    // IPlayable interface
+    public void Move(float direction)
+    {
+        m_Rigidbody.velocity = new Vector2(direction * m_MoveSpeed, m_Rigidbody.velocity.y);
+    }
+
+    public void Jump(float power)
+    {
+        m_Rigidbody.velocity = new Vector2(m_Rigidbody.velocity.x, m_Rigidbody.velocity.y + power*m_JumpPower);
+        if(m_IsGrounded)
+        {
+            m_CanAirJump = true;
+        }
+    }
+
+    public void AirJump()
+    {
+        if(m_CanAirJump)
+        {
+            m_Rigidbody.velocity = new Vector2(m_Rigidbody.velocity.x, m_AirJumpPower);
+        }
+        m_CanAirJump = false;
     }
 
     //=============================================================================================
@@ -79,18 +121,15 @@ public class HeroKnightController : MonoBehaviour, IPlayable
                 m_Animator.Play("fall");
             }
         }
-        
     }
 
-    //=============================================================================================
-    // IPlayable interface
-    public void Move(float direction)
+    public bool IsGrounded()
     {
-        m_Rigidbody.velocity = new Vector2(direction * m_MoveSpeed, m_Rigidbody.velocity.y);
+        return m_IsGrounded;
     }
 
-    public void Jump(float power)
+    public bool WasGrounded()
     {
-        m_Rigidbody.velocity = new Vector2(m_Rigidbody.velocity.x, power*m_JumpPower);
+        return m_WasGrounded;
     }
 }
